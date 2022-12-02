@@ -3,44 +3,50 @@
 import std;
 import utils;
 
-auto main() -> int {
-    const auto filename = std::filesystem::path{ "real_input.txt" };
-    const auto lines = read_lines(filename);
-    auto elf_calories = std::vector<usize>{};
+[[nodiscard]] auto elf_calories_from_lines(const std::vector<std::string>& lines) {
+    auto result = std::vector<usize>{};
     auto accumulator = usize{ 0 };
-    const auto flush = [&elf_calories, &accumulator]() {
-        elf_calories.push_back(accumulator);
+
+    const auto flush = [&result, &accumulator]() {
+        result.push_back(accumulator);
         accumulator = 0;
     };
+
     for (const auto& line : lines) {
         if (line.empty()) {
             flush();
             continue;
         }
-        const auto calories = to_usize(line);
+        const auto calories = utils::to_usize(line);
         assert(calories.has_value());
         accumulator += *calories;
     }
+
     if (accumulator > 0) {
         flush();
     }
 
-    const auto max = std::ranges::max_element(elf_calories);
-    assert(max != elf_calories.cend());
-    std::cout << std::format("The elf with the maximum amount of calories carries {} calories.\n", *max);
+    return result;
+}
 
-    // part 2
-    auto top_three = std::array<std::optional<usize>, 3>{};
+template<usize num_bests>
+[[nodiscard]] auto get_bests(const std::vector<usize>& elf_calories) {
+    assert(elf_calories.size() >= num_bests);
+
+    auto result = std::array<std::optional<usize>, num_bests>{};
+
     for (const auto calories : elf_calories) {
-        for (usize i = 0; i < top_three.size(); ++i) {
-            auto& entry = top_three[i];
+        for (usize i = 0; i < result.size(); ++i) {
+            auto& entry = result[i];
+
             if (not entry.has_value()) {
                 entry = calories;
                 break;
             }
+
             if (calories >= *entry) {
-                for (usize j = top_three.size() - 1; j > i; --j) {
-                    top_three[j] = top_three[j - 1];
+                for (usize j = result.size() - 1; j > i; --j) {
+                    result[j] = result[j - 1];
                 }
                 *entry = calories;
                 break;
@@ -48,23 +54,34 @@ auto main() -> int {
         }
     }
 
+    return result;
+}
+
+auto main() -> int {
+    // part 1
+    const auto lines = utils::read_lines("real_input.txt");
+    const auto elf_calories = elf_calories_from_lines(lines);
+
+    const auto max = std::ranges::max_element(elf_calories);
+    assert(max != elf_calories.cend());
+    std::cout << std::format("The elf with the maximum amount of calories carries {} calories.\n", *max);
+
     std::cout << "~~~~~~~\n";
-    for (const auto& calories : top_three) {
-        if (calories.has_value()) {
-            std::cout << *calories;
-        } else {
-            std::cout << "-";
-        };
-        std::cout << "\n";
-    }
 
-    const auto sum = [&]() {
-        auto result = usize{};
-        for (const auto& calories : top_three) {
-            result += *calories;
-        }
-        return result;
-    }(); // <- immediately invoked
+    // part 2
+    static constexpr auto num_bests = 3; // we want the top three elves
 
-    std::cout << "sum of top three: " << sum << "\n";
+    assert(num_bests <= elf_calories.size());
+
+    const auto bests = get_bests<num_bests>(elf_calories);
+    std::cout << std::format("top {} elves:\n", num_bests);
+
+    std::ranges::for_each(bests, [](const auto& best) {
+        assert(best.has_value());
+        std::cout << std::format("{}\n", *best);
+    });
+
+    const auto calories_range = std::ranges::transform_view(bests, [](const auto& calories) { return *calories; });
+    const auto sum = std::accumulate(calories_range.begin(), calories_range.end(), usize{ 0 });
+    std::cout << std::format("sum of top three: {}\n", sum);
 }
