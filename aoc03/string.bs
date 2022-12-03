@@ -1,0 +1,20 @@
+namespace string {
+
+    export struct String {
+        length: U32,
+        bsm_char: ->U32,
+    }
+
+    export function at(string: String, index: U32) ~> Char {
+        let result = 'R';
+        let pointer = string.bsm_char + index;
+        bsm {
+            offset_copy *R0, 16, R1
+            add R1, 3, R1
+            copy_byte *R1, R1
+            offset_copy_byte R1, 12, *R0
+        }
+        return result;
+    }
+
+} // namespace string

@@ -1,0 +1,95 @@
+namespace set {
+
+    struct Set {
+        data: [Bool; 52],
+    }
+
+    export function as_const(set: ->mutable Set) ~> ->const Set {
+        let result: ->const Set = set;
+        return result;
+    }
+
+    function to_index(char: Char) ~> U32 {
+        if is_lower(char) {
+            return to_u32(char) - to_u32('a');
+        }
+        return to_u32(char) - to_u32('A') + 26;
+    }
+
+    function index_to_char(index: U32) ~> Char {
+        if index < 26 {
+            return to_char(to_u32('a') + index);
+        }
+        return to_char(to_u32('A') + index - 26);
+    }
+
+    export function create() ~> Set {
+        return Set{
+            data: [false; 52],
+        };
+    }
+
+    export function insert(set: ->mutable Set, char: Char) ~> Bool {
+        let index = to_index(char);
+        std::assert(index >= 0 and index < 52);
+        let result = not set!.data[index];
+        set!.data[index] = true;
+        return result;
+    }
+
+    export function contains(set: ->mutable Set, char: Char) ~> Bool {
+        let index = to_index(char);
+        return set!.data[index];
+    }
+
+    export function remove(set: ->mutable Set, char: Char) {
+        let index = to_index(char);
+        set!.data[index] = false;
+    }
+
+    export function print(set: ->Set) {
+        std::put_char('s');
+        std::put_char('e');
+        std::put_char('t');
+        std::put_char('(');
+        for let i: mutable = 0; i < 52; i = i + 1 {
+            if set!.data[i] {
+                std::put_char(index_to_char(i));
+                std::put_char(',');
+            }
+        }
+        std::put_char(')');
+        std::put_char(' ');
+    }
+
+    export function intersection(lhs: ->Set, rhs: ->Set) ~> Set {
+        let result: mutable = create();
+        for let i: mutable = 0; i < 52; i = i + 1 {
+            if lhs!.data[i] and rhs!.data[i] {
+                result.data[i] = true;
+            }
+        }
+        return result;
+    }
+
+    export function front(set: ->Set) ~> Char {
+        for let i: mutable = 0; i < 52; i = i + 1 {
+            if set!.data[i] {
+                return index_to_char(i);
+            }
+        }
+        std::assert(false);
+        return '0';
+    }
+
+    export function length(set: ->Set) ~> U32 {
+        let result: mutable = 0;
+        for let i: mutable = 0; i < 52; i = i + 1 {
+            if set!.data[i] {
+                result = result + 1;
+            }
+        }
+        return result;
+    }
+
+} // namespace set

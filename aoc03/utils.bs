@@ -1,0 +1,24 @@
+function to_u32(char: Char) ~> U32 {
+    let result = 0;
+    bsm {
+        copy_byte *R0, R1
+        offset_copy R1, 4, *R0
+    }
+    return result;
+}
+
+function to_char(n: U32) ~> Char {
+    let result = '0';
+    bsm {
+        copy *R0, R1
+        offset_copy_byte R1, 4, *R0
+    }
+    return result;
+}
+
+function is_lower(char: Char) ~> Bool {
+    let a = to_u32('a');
+    let z = to_u32('z');
+    let c = to_u32(char);
+    return c >= a and c <= z;
+}
