@@ -15,312 +15,399 @@ function char_at(string: String, index: U32) ~> Char {
     return result;
 }
 
+struct Set {
+    data: [Bool; 52],
+}
+
+function to_index(char: Char) ~> U32 {
+    if is_lower(char) {
+        return to_u32(char) - to_u32('a');
+    }
+    return to_u32(char) - to_u32('A') + 26;
+}
+
+function set_create() ~> Set {
+    return Set{
+        data: [false; 52],
+    };
+}
+
+function set_insert(set: ->mutable Set, char: Char) ~> Bool {
+    let index = to_index(char);
+    std::assert(index >= 0 and index < 52);
+    let result = not set!.data[index];
+    set!.data[index] = true;
+    return result;
+}
+
+function set_contains(set: ->mutable Set, char: Char) ~> Bool {
+    let index = to_index(char);
+    return set!.data[index];
+}
+
+function set_remove(set: ->mutable Set, char: Char) {
+    let index = to_index(char);
+    set!.data[index] = false;
+}
+
+function set_print(set: ->Set) {
+    std::put_char('s');
+    std::put_char('e');
+    std::put_char('t');
+    std::put_char('(');
+    for let i: mutable = 0; i < 52; i = i + 1 {
+        if set!.data[i] {
+            std::put_char(index_to_char(i));
+            std::put_char(',');
+        }
+    }
+    std::put_char(')');
+    std::put_char(' ');
+}
+
+function set_intersection(lhs: ->Set, rhs: ->Set) ~> Set {
+    let result: mutable = set_create();
+    for let i: mutable = 0; i < 52; i = i + 1 {
+        if lhs!.data[i] and rhs!.data[i] {
+            result.data[i] = true;
+        }
+    }
+    return result;
+}
+
+function index_to_char(index: U32) ~> Char {
+    if index < 26 {
+        return to_char(to_u32('a') + index);
+    }
+    return to_char(to_u32('A') + index - 26);
+}
+
+function set_front(set: ->Set) ~> Char {
+    for let i: mutable = 0; i < 52; i = i + 1 {
+        if set!.data[i] {
+            return index_to_char(i);
+        }
+    }
+    std::assert(false);
+    return '0';
+}
+
+function set_length(set: ->Set) ~> U32 {
+    let result: mutable = 0;
+    for let i: mutable = 0; i < 52; i = i + 1 {
+        if set!.data[i] {
+            result = result + 1;
+        }
+    }
+    return result;
+}
+
 function get_first_string() ~> String {
     let dummy = 0;
     let start_pointer: mutable = dummy@;
     bsm {
         jump end_of_data
         data:
-            .string"FzQrhQpJtJMFzlpplrTWjTnTTrjVsVvvTnTs"
-            .string"mScqSqqgcfPCqGPZcfGNSvTNsVVNSjNvWSNsNz"
-            .string"fPcPGqgCcHgFzQpJJtHtJH"
-            .string"DZDqqlrjplDHrNCmnBcHBMCRcJzb"
-            .string"RQFLStFvdcBbzdJbJM"
-            .string"PThQtwftTPFvtTPhvtFtfFtpZZllwjRNlsqNqqZjwpGlrZ"
-            .string"pPwtqgwJZPJLgQqSFlqhFFlqMd"
-            .string"DBmCWBBDWTRGvcVRTCCnnfQlFSdlzfhfdMWQfjhhQz"
-            .string"drmBVVCRgprPtrZp"
-            .string"HznjQjvmzDMVrQnMLJMMlfWgPSlJGWWJPl"
-            .string"BdcqqhcdBRpFhhZBthhctdJSJJWfgGFlJCSFgbWPCDJS"
-            .string"NdRTZdNqBwqtthpRBTTRqdtZrsLQVzrrzjzDwDsnmrQrnsrr"
-            .string"HZFZCFzZWszqsRTBZTNMhmthVTmhDppmMQVPpm"
-            .string"wjvSbJddvrvlrvnJSJJvlJmhPlhVPVtGVpQDBVMpphQP"
-            .string"frbrfrcvvnvjfwbcJgrrCBRsCFsNzRgRCHCqssRH"
-            .string"dDFNqNqZqPLNqvqTTvCLSPdZssGHClJQJcRHJGHHcHBcsMsQ"
-            .string"lrjmWgWWrhjgrppQHHMQrsQRJGcBJc"
-            .string"lVlmnwjmdTTSvVFN"
-            .string"FWNFHvQPmLGwwwSHtswwln"
-            .string"RfMJcDdfdcfdddfZjdchrtZmSmCZVtqVnZmrnrtC"
-            .string"JMmJcfjjphcghpgjhRGzGzBBGPFGNBvPTpFL"
-            .string"cVPVwStmmcQPBQPpSCppwhHZNNqHszNBhsNRNjqHzj"
-            .string"MfWdDgvdbnvgMTWgvgZfzmsZJHzNhqjqjRhJ"
-            .string"MDWMWGndMgFDnFLDwQrPPCSrCSVrlmGS"
-            .string"QLZmPdRdWmMsMDWZmsLWWrhMHcHGzHvGzFcvrvzNrc"
-            .string"tplSbLVBlvHHcFNnSr"
-            .string"VqfgwLlCJWmWQTfW"
-            .string"nRWvlvRbtLvdMCPFGL"
-            .string"wrfsJNNGhNzGrTgDMDLgPMLPfq"
-            .string"wcVhJQhwhrrBpmVblBRGSG"
-            .string"HHHcggrZLcQQcQll"
-            .string"GzfzTRTzmmFMwSNSwdSJQtNLNB"
-            .string"TGbmLMFTzVVVTMzmFMfFPMHPZhnjZCpHnhgnZnPWCPZZ"
-            .string"MRwwpVMHRspqVqwmccDlDrcHBBZgBl"
-            .string"jQfQQQjWWFBgmcgDfcZg"
-            .string"hvvSQzSnQQSWWQWSjTZVTRMshwVCssppwV"
-            .string"pvrTvCvtFppCHMMZcdDFdcZM"
-            .string"wLjTQnqljjSnlwjqjRgLcHHHMBDMZhBMHgHcbBDh"
-            .string"mqjqlSNqRqwSRrWCvzGmtfTfzs"
-            .string"TWScDCqCQQVBWDqWHsHswwBgRJzRhhHp"
-            .string"dPttGrvFfGjMjnjvshsJgsJLgghRgH"
-            .string"rFMlGdtjPffNnnrffSNcVCDqQqCQRqQRRN"
-            .string"GmBRbVpPbmJcwggBBgWW"
-            .string"LjsTCNNtddjHqLLgWwccqgfq"
-            .string"nsjNjntNtjHCsDwZmwZZVmmGSvSD"
-            .string"bwDDgNFtMMDbFsMbFwWWVcRcSpcgjgQWhWSp"
-            .string"lfTJJlvdfCffccWppRjRlcSc"
-            .string"RnzGdJJmsMNnMFtM"
-            .string"bsBTFsqqTTmFZTsQBWWznWCRshlJNJlCVh"
-            .string"GjGnDvDjvjPppHwwpwgrPPClJhNVRCzhhzJWlWlhNlvJ"
-            .string"ffdgLrgdLrDjdfHPbbZbttcBbcbLmntn"
-            .string"TNTwwvTTHNtTHNLLVqtqTSZBJnrnhhbrFJjZjnVZgghF"
-            .string"cplWfRlzcWfRCZZhFrGjBfjZjn"
-            .string"pddzDsRpDcclzCQMWBvNSmTTSqdvPPvqwqtT"
-            .string"DQTttwwLtQtVSDMJDRmmSS"
-            .string"ffsWfvrBWrPvwJhPhPSMPMVn"
-            .string"WsvsggFvwNLgHtNQ"
-            .string"llBbVDMTlFVdFDTbVggSVsqZqZZZqqvNJZJRNRWgtv"
-            .string"HhpjcHHvjPsqCsWcNcsq"
-            .string"GfpvnPvwFDTTFFDw"
-            .string"GMmFGMGFFgVwQHQwwM"
-            .string"cJtZNtZTbThcZtcZJJtTZWJPllgNgpPvVgpjHvQpRpHQNg"
-            .string"hWcJZcnhcJznbcBZLqSLDfCmHqnqCLsD"
-            .string"zQpjLpnhnsHTnlQLrMCCHPFrvvCMPcHm"
-            .string"ZfgdSBtNqBwlgSDfZDwtqSFvJCvrPrVvFmwCJFvrmmFV"
-            .string"dfbRNZBqDtgRNBNNNljLLjhGRGGWGLGTRhjz"
-            .string"hhrnfBzhtzZgDgDnBfrfDZsRpMNCNNWjwCCfGQGGNGCGQC"
-            .string"lcdPmHLSPDSdFDpQMLjCQQQCRGpN"
-            .string"lJSSbmPdVdVvdHbvSDFHHPlZqgBnttzgTsssTrqgbZbsTT"
-            .string"FsdsShrgggLDdbSDsgrGrlWHTpfRpTjjfFTzRTRjBWWp"
-            .string"mPvqCmJCqJNnPvPNPCvvLTTVjHjzNWHHTWRBRVTWVz"
-            .string"wJLvqPZmJtccncvZmJqqrghDGQwbdSGdsgGgQgQr"
-            .string"zFwtNJGtNFlpnwHccZjZbcpprsmc"
-            .string"PWQfBWhBgQgTWQRLThBqMSVDSbbDRsVDmsmZsSZDjr"
-            .string"fvQfWBfLqfTqhLhCvNFttJlCwGrrCC"
-            .string"fNrGLNrfNrGjllRRRPmWVL"
-            .string"tbJdcFbSSssZSmmpFcsSbwDWVWBlllVPDnnjBFjDRnBF"
-            .string"ZZJcvZctgNmmvMGhQm"
-            .string"HhhjFRhgrcRTFLvWVJVQWJVHDHQJPP"
-            .string"GwCmwBfGzfSCzCfwtmtzzJVWSVJJZrbWQQQqJJDZVJ"
-            .string"mtfzpGdststtBmfmCwrGRFcTcvjngjFnRcLnpLLn"
-            .string"rrwjdwLgVmVwHrfPCJPQBCBGmPtt"
-            .string"ccNZqbNnMMblNpTlNpnhhBPSJsQhJtJtChPJqS"
-            .string"vTWvNcWNWTFvnnvcgjzDLVQLgHVwWDrW"
-            .string"jNPgbNHbfLJgLzfz"
-            .string"ShvhhFVVDShFVqMSSSvZfffvPLtBBBBJJlpfLJJv"
-            .string"DqhnShhMnZZwCSDCMhChrRnNrNdNQbHNNPmjmdHN"
-            .string"VQVZGQFnzFTSsBfgzgfs"
-            .string"rjlpjtDrtMLZPMtPtpPZPwCsgSHgMHCCmCTWsgBWSBmg"
-            .string"pjvDqLwrlDtwqtqNLvtjpPPwRNbQRncQVQddZhRhJQbJncbG"
-            .string"PsBSqnSdQsFhmmmnppFc"
-            .string"TRhNvrTCvNTHVcfHbJVTpc"
-            .string"rhtWvGWLrjRqdSqqLLqdld"
-            .string"vPhfqPJvrMrnffDDhvpMjdzGMLdLLQpllLGQ"
-            .string"mbmcFSScGbSCcQlzwQQlclsg"
-            .string"BSGVCmCTZWCGGvnvfZHqqrDhHN"
-            .string"GSRfrzGRhzsGChjTBBlqBgjgCTCn"
-            .string"wHQwtDVDHwHHDJcDWJZwzHZBqTnnBFlvjFgBqnljjvBdBZ"
-            .string"JNmVJpVmNtDHJWHrbfPLhbGhrzRbpr"
-            .string"WcWcbzNPbDwBNvWBwRMPQmJZQRQZftRZGP"
-            .string"LhVHFgggTHCFHhfMQQSMMGQRMLLM"
-            .string"qnrqppFVHphqfDsNbzjrzbrN"
-            .string"cwgDrdLSrBrvvhDzCljjTW"
-            .string"VHtVZpspQtMQsVRQppFVQVHtCdPTPTzdjvhTzTTPRvjjvWhn"
-            .string"QQZpMdJsQFJHtMHdScwLwLJGrSScSwqw"
-            .string"ZsjNflGfRfRPrZNRFcffLwJdwcLdDBnwzzzDznVn"
-            .string"CTGvhhTqbtbgTqLJWdDntzWWdnLw"
-            .string"phCMgmQGvvHCvMhbTQQFsNsNFPZSfZjffmNsll"
-            .string"CNpCJHLNhhSSHZPgrFlFFWgpFpmzjj"
-            .string"qQttDVDwQGdQGvqDQfwbcVrrlljjzzmzrVJgrr"
-            .string"nvMDsqqqQvfvsqDnRSZHJPPZHhLHLS"
-            .string"RNNrrPfDNRQwQhjscghMqs"
-            .string"WVZlHvnZqtlLVLvwjwhsggTstMhwTw"
-            .string"vGHWLJlVWlmLVqRCGCFFNfqqGf"
-            .string"MNzqCnvqvqvCVLBvvCVCpVcRssncrPSTWGrPSPdGTcrP"
-            .string"hmHwFmQjFlhtZmHwtZjjddSSGcsdPrrGcQQQRGPW"
-            .string"fHbbFjlhZwmtwhfjmmwmmLbpLqzqvBzLzCvLNRMbNB"
-            .string"tQfLrtQPrrfDSSCVlDfLSrmbBjGvWjjLmWWWpWNNppmv"
-            .string"wdHhRTTndnRThdvnBFGpNBMnpvvp"
-            .string"JdqTHTHHRdqzsJRRzTRHscJdDSGCfDlqQZqlfZrZZCffqSSQ"
-            .string"hQMWLsgGJMMhsCHggQWhgspDWFPzZvPvptDvzvmtdtdF"
-            .string"BrBlrTBrNRbfnjNQlZDztPvpmpppmzvfdd"
-            .string"jQlQlqQVbVcsMgMgChhJVs"
-            .string"MtFMCTWRFRRtCRTTRTMGJddjLdstHvBzBHzHVVpL"
-            .string"lZSDnbDlnZPrbHpzJJsdSVJpBL"
-            .string"nNghhPrlZlgDTFhCfMFJRMQF"
-            .string"RGpPFZPRQZPFRGvpPQPpjvpmhnnCMjhmhgBgVgMVWBVgVM"
-            .string"wLtfNdNHmrNthCBgCbhnngWd"
-            .string"srSfwHfszsNmtswlrqQDGQFDRPJGDvzRppRJ"
-            .string"GVFFGvVWZLFsmssFRNfVvmGGJPpJTTqDBvTpqlpDvqbBtTPl"
-            .string"gQhzzChzrMQhjpzlzWzJpPpBJb"
-            .string"ghgWjcCjMgCHWdQMhdjChCmfwmRRGZZGVHLZHRfmNwVs"
-            .string"DnDVhdnrfSfpcGGjQQGdJddJ"
-            .string"bPWPRbRsRMsHNzDqTZcGBcqZqmmN"
-            .string"HvwPvvzMPwDCChDVwS"
-            .string"vTCCvTfWFDTtRPMvfWFlDFHBqGLpLzbwBgWwqzGqbBbB"
-            .string"cQcSNchSJSZShVJNnZrhSqBpgwGHHtGwqtbwLbqpbr"
-            .string"JNnJVsJscNstNhQsjnVVNlFfMmTMFfCTfjFvfPRPPF"
-            .string"VLFBsgffNFNqRvbz"
-            .string"ChltjTdjDhHpHZvdpjjZhwCpbNrbSzzbrNGMTMMNSMbWWNSN"
-            .string"vQjpttQhHnLsBQVLsQ"
-            .string"mbzQgTzRVVbsVdQgzzVRddmztFGWNGNNWnGtFSGBsrCNWCrC"
-            .string"jfJjvPPwLDcHDPvDDPDppLCWCFBGWntCBnrtFcrFWTGn"
-            .string"wpJPLjvpTTDpwhfgzmVMbqhdhVRgzl"
-            .string"PlcqbWClLmnqZVLq"
-            .string"THwdrrhddhhfJJhwLJhpQnDVnznnmZQQnSpfpD"
-            .string"vrFdvGsGHhhhwHjFGrFGJHdMCCcNgbWMPccRRccMFLNPPP"
-            .string"tbppJqcNtJnZzRJbPFsFPHfZrrshFDjj"
-            .string"GdwgwlLgGCndsDFrhDHHFF"
-            .string"SSlLnmmvqWNqmcqb"
-            .string"ZPFPPTZpZSWzCMMSzPBsFvhtlQvJQQtJhsVs"
-            .string"dmNbmgbrwDNmbcDgwNdcwdLsnhlJlnvtsBJnhVQqqnstLB"
-            .string"bNGfDGgHHVwbwNwVfgmRMzCzzCSHjSRZSZCTRS"
-            .string"dDTffQdqQQLBLnVLLQvL"
-            .string"rrBHZZcgJcrLvNLtLgRLbN"
-            .string"cjjJhrFlhZwFFzwJzmTBBdmTsDPzDsBP"
-            .string"ClGrJJMNCrGQqlcPvWgnDP"
-            .string"ZBvbjHpSwBVVVcWjjjqQ"
-            .string"BLSbbwsHSTBHwmLHHLbBsSTFdrfvCrtmdzfGJzrdzGJddGfh"
-            .string"gljWRwmSjtJWjJtJjgjSZfVSTVVHGZSVHcVchZ"
-            .string"pBzLFQpPsFBGcGBTThfB"
-            .string"pFpQzFLPLpvQFQnLbsqqGddgjbmwRldwtWmlGWwj"
-            .string"PDQDMFQBMfWPvjdLLndLjrmsMj"
-            .string"qZqVzTRRqHtvZGGtVqTTzVjLLsrmJCddnLjrjHsrhdCr"
-            .string"GzwcZtqNzqvNqwzZVGRwSzbpWfFbWPlWFpNDBfQfFNNf"
-            .string"dfRszdzVdsjwdhLwCCqwGllHvPGPwG"
-            .string"SpJtBLFgcGqHQClqZF"
-            .string"JrttrtcTmSSLrmtBTrNgnBJjbNhhbhzRdsVdMhNjhMMhVd"
-            .string"MPFSCfSMqVSBGrtzlvccfQctzbzl"
-            .string"hZNjTHWWTZwshbLvmlWpBzmbmm"
-            .string"dRTTJNDNhjsJqBBMMgrJPVVr"
-            .string"WnVzDMjlDVWwwHgwhmgNhNNsJh"
-            .string"qfvrLNCcbLdvpcvbrPPqCsGhSJGTTBspTshBpTBBms"
-            .string"ZLvvZfrPfPCLbCFFzjVQzRnNNMVzDQ"
-            .string"nllbFTTpTFTBcnCjQPqQdZRQZhCb"
-            .string"tvWszrrztvSmzQQvrDmZRjjjPPDVqPRdZRdCPd"
-            .string"gfzvSsftgQHQHgQl"
-            .string"GVbHRRGRLpdmGWTm"
-            .string"gSPPltPlrlvccFccPlcJNCTpnnmpMCLMMmWfdRmMSS"
-            .string"FzNJRhhvPFRvQwzqjqzBHZZj"
-            .string"PhZSpFBPBFsNmjBVllltBj"
-            .string"JMGLnrrnbfffrdqRqPHnnqLDVTDDjgmRgwtmjDljlDVlwl"
-            .string"LHMqPqPnnqGLWJPMnndrGfSWppzvvFSChFFFvvzQSQZz"
-            .string"RSWWssbvnnCqZnWsRCnssWrTggNhgbNHBgQjhhQBgjNT"
-            .string"mcpzcppzczcDGVcPcDLLGLjmrMNTNtQNHhMHrQBQNTgN"
-            .string"LVpPfcjjWvsFFnFf"
-            .string"MpddpdCpJdJlbdMvBHMnnsHqSRvG"
-            .string"PWvZfFmZrrfmwWwFznBnqRRSGcsBVmVBRG"
-            .string"zjzzhQPQvzjLPQzwffrwrtlTCDtJDlgJLltpTTJlTl"
-            .string"TvTWjjzpznGttFFZccrrPrSZllcB"
-            .string"gNNSqHMqsMHQJHNZCDDCZDqLZdlZBD"
-            .string"SMQNSRNbRRHwhwhsRmtnvWVmmnbGnjmpGn"
-            .string"ccSVQjCQddTsFJcH"
-            .string"gLppBfgfmvCRFdsddTJJgb"
-            .string"WMLMmWGGBZWZLCtvDhlSSDGlwhSPSzSP"
-            .string"TpqVGVHFQGmqSqPZdccNCzzhdwCjNG"
-            .string"fffbbvftMrBMDDcCccCZCjlvhCCd"
-            .string"RLWMnbftDhnMRtfBftRJMtLMgFgHmmpmPmSmmQFPPLHHVTQS"
-            .string"nRvwQSDNcpVJJcJR"
-            .string"qZMjBhjhZMMBzLBGLGrjJbTPVTpbdPPdVbVb"
-            .string"ZZpmFFZlfGqfmmGMzlfmMmnWQDtHtSvnWWNSHSSstFtS"
-            .string"bFDGZjGDbbRSgLtN"
-            .string"CphJVfJWCTBgvfLHNRcwnt"
-            .string"WVhPWBTzzChzhhhBmrpPPCJZDQtdMlrjFQdrFqsjdrQsFG"
-            .string"ZBpVQHHVMMWWdmmLWw"
-            .string"lQhhrjcRttrqbvQLNwdDWzmNSDmStz"
-            .string"QbGqhcbvcsqvCCHnsCZHCnTn"
-            .string"tlWtQTTTJjTQtVnmrbnPWVShVC"
-            .string"MDMGGzsHcwFgGZBqrmmPSnbqVmNVGC"
-            .string"sZFPwHcMZDBRTlvQQJttTQTR"
-            .string"FhVRfGptMGMnZhRFBNRBCCNHHNvTNTRC"
-            .string"zmwrLLSjrbzmNlcvvrHvDPCN"
-            .string"JLwjQdSbjdbSdqJQFGVqFVMgnGHMfGVV"
-            .string"fffZWrJqZSHWTWHqSvrgDhggzRjttsDhpDgs"
-            .string"PGlBLcBBbnnbLLFbGLBjRgjFTFVzshtzpgsppz"
-            .string"TGCPnMPQlGnPmclPlnnQmbmHJvNvfHdqwddwvvZfCNHCfW"
-            .string"ClLwpspTPrTFZCdzFbZdbQ"
-            .string"RRMWfRgWVRMRQBZZScVczVGFbjNb"
-            .string"MfnvMqWmslvDhQPw"
-            .string"hdndSdqsTddBhdcmmNHFDcqHttPF"
-            .string"JjMzzMZQGwZGZJzMzZJQzGJFvPvNPtFmvmNmDvcFtvDHMv"
-            .string"gZwzQwJfGVJQJbGLBsSTSTdTbCWDBSnd"
-            .string"ZZCHZRzMZGRMhMMVVFNThrdd"
-            .string"SgsccSPmmgqssSlqsgcmscSqlhpFdVThjphNrdrhjdwdhFJN"
-            .string"vmttqTcqvLqqmPccmqSBbRWnWzQZZZZBHnQCzHDH"
-            .string"GgPnGdSPBpGsLTBL"
-            .string"rVNJjmwZqtZZshltFTtvRFsL"
-            .string"mqmWrZVqWjrqZMNwPMQQbsddgdsbsgPz"
-            .string"LZLVvjZrggHLJggSZDgrnPnQnRnppVRllntRdPFz"
-            .string"chMCzbqGmhNhhbBCMBdFnpfqFnltRRQnlPpQ"
-            .string"TChmWcMMTmBswJzZZrWrvzgg"
-            .string"gngRNBNRBsNFFBgfgbLLLnqdSLvLTcbLbd"
-            .string"GWtlChlVMllcZSDWSLbdZL"
-            .string"lljjGlhMGrGJpsFdRJfsfzfz"
-            .string"jVTdrnGQcQtTTTFQqBqsgHHFgsqf"
-            .string"ZZLbPLzDzPZCmsgqsBHt"
-            .string"wDzDlPblRDPLPvhvwtdnnhdrnrMGWMVGMThj"
-            .string"spjjpjvjpjmQjrpCMfSlfzrPBl"
-            .string"dHFntHWnnbRVFtnbcqHFzBCCCPzfPMlcCSlgllzc"
-            .string"RLbVWHnnSWtnHFbdbVRdNNtQsjsQTjDLwmGTmTssQwmLGJ"
-            .string"JbJJSLMhRMSLhNqqwFDwFNcFqL"
-            .string"GcpnGnznnpzpzGpffNTNTwTfwdDNNdTFdD"
-            .string"nllnlPGWQWHcGpzzQGGzGvHGJbVVtJSChQVbmtmVJrmrmbRm"
-            .string"GFsFrzwrflmtdtbltG"
-            .string"ggLPDngCJncNLJRDwgnllmJqjWMjhjhjWWmWjj"
-            .string"nBNRNPgpRgDLTgNwfsSHVBQHVHwsZr"
-            .string"WwvnvWvcFtwtSFSF"
-            .string"zBZZZRQSzMBSgSVJGjGTPTGFzCzmmj"
-            .string"fZDrpZZfRfMgSQDDBhgQghDHsnbrcNlWnnLWHLrHsWnllc"
-            .string"ZVncdPPwVPdhZngnqHWHNNvTHvlMvn"
-            .string"fSLjjLSGGBjTTHqvBqrMNT"
-            .string"RSSSDGRtSGZthTTctmtg"
-            .string"rtzrfJbgJHRfGRZLPR"
-            .string"hdVhlllmFlFPLwHmsRGGZP"
-            .string"nTWhRjTBTWlvNQgnJSSbrJtz"
-            .string"JgVTpBpfvgpTDDJFJvTgggtlFlNNMRLNNzNNZRNHMRCLlF"
-            .string"wbPWcSGbGqWDlnNWMMMCLMWZ"
-            .string"wrsGcbrcbcqwDwbcmGvQBQgTTsdVJgJsVdQf"
-            .string"mztrhgJtDrhgcrZmnhbnzbhcMTMPlBCPBGVGTMVGslCCPGDs"
-            .string"FLRQmjjFSQpQwLlPsMsCpvslvPCB"
-            .string"fNLLwSdSwWSWjwmrtczZhhrJzdzh"
-            .string"HHwCwJFmHZttZCfCSffSMHcVDMcPBRPcPRDhPghM"
-            .string"nvQLsTnLslnLvpzGTssnsRPDMhPgVPVgtcVMRPgVQQ"
-            .string"vnsTGWlTLsWTLLvNsGWlsZrwmZCJddjFmtJJNZFftj"
-            .string"hbjSTvSJTfcSwcPSPfTbfHszVVFpGnpJpsHFnHVVls"
-            .string"rtZrcQrRZZQrmZBQlCGppnppHzpVFCGR"
-            .string"WmLqmgNtcLNQWTbPvfPwbbdb"
-            .string"HzZgsdHglHlzdHsFtsNNJSlNcSpjcjlrrNVv"
-            .string"wqqWRPPqwmbcqPjQVvSPJJrVpv"
-            .string"qqBBqmWRhqRLqcBnhzzztgnTdDHnHsFsHn"
-            .string"rJPFVwwsrJwmdVrLWJvvRBWBvbzWlb"
-            .string"nDZcNGNpjTpHncvpZCDnTNZGhlWzQhWbpRRQlQhpWWSWLlQb"
-            .string"CDNntnCCHnvmqPfwtFdVqd"
-            .string"gqBwgBjCswwgqNBNCVDDTVdhlSDTDcZc"
-            .string"HvRRFMzRRRRMpHrtTllfhZHHSShHTf"
-            .string"PmlGLPrppMrrmFFmLMWRjbsjnsjwQNJWnbQjWgBN"
-            .string"pDggpFgRghZjBFPPnPPFrt"
-            .string"cwTfLwBVwCWbLcVTVVvrdndGjMHrnGJtnttdMC"
-            .string"NTVcWNvcBSpgNqspRQlN"
-            .string"DLDgFlDmNZfjfnJZSF"
-            .string"tctvttzvGGzvrHqtVVdwnJGSSnnjjZdWTdwW"
-            .string"zvpcrbpHpqJJsPbPlLlhmhglPQ"
-            .string"pvHHvssFCFZQNCftttdQdd"
-            .string"VgTGTTVGgLjDjlLGzgPVMTNwmcwQmMQfQtmdcmwMJwNm"
-            .string"TPjTDjfGWTLLljgzrWpZZbsqrFqhqbps"
-            .string"ppVLcfcwSLgpSLVLgWwtfshDNDqvWvGvlQZvDNHQHjqq"
-            .string"MPrzmdRrPPrCJFnMnMRRFRPdqqZQNQvjvZDGDlHhQvGNDG"
-            .string"BmBMBBJTMmPBJMMFCCFJRmrsTlVpVbpwLSVwLsgcwTVlVc"
-            .string"SSGzmFRzmRGLgSSmGMJFnvfvJnJVnJQnMl"
-            .string"cBpjHtjwNfcpNZtppHtCMlMPMlJBVlVQlvJPvJ"
-            .string"dNtNZwqWfqtqZWtHttsqHqrRrrdRTLbmmzSLmTGGmbrg"
-            .string"RrrddnrgnRbbgWdGrfnwgQwjDjDpvTpBQTwBPP"
-            .string"MHCStZJzSwvPjWQD"
-            .string"mcJWVHCCLcGLbdcn"
-            .string"PlMsdjPdGMjdPSrSjgddbLbmHHTszHZzpHmsTFvmpzZzmN"
-            .string"ntRJQVRfcQhcQWhnchBJWntTFTTTNTSpFtztmZFDTpDZ"
-            .string"hQfcfCBSwCccVJhSJnrPPGLqPlbPLCrqldgb"
-            .string"vgvWDMZvGpcqgqsP"
-            .string"tSdtjLHLQLHjdFdDddQSQhwlsGqwQlqqqhQsPhGc"
-            .string"tbRjtTLFRvTZDBrMrV"
+            .string "FzQrhQpJtJMFzlpplrTWjTnTTrjVsVvvTnTs"
+            .string "mScqSqqgcfPCqGPZcfGNSvTNsVVNSjNvWSNsNz"
+            .string "fPcPGqgCcHgFzQpJJtHtJH"
+            .string "DZDqqlrjplDHrNCmnBcHBMCRcJzb"
+            .string "RQFLStFvdcBbzdJbJM"
+            .string "PThQtwftTPFvtTPhvtFtfFtpZZllwjRNlsqNqqZjwpGlrZ"
+            .string "pPwtqgwJZPJLgQqSFlqhFFlqMd"
+            .string "DBmCWBBDWTRGvcVRTCCnnfQlFSdlzfhfdMWQfjhhQz"
+            .string "drmBVVCRgprPtrZp"
+            .string "HznjQjvmzDMVrQnMLJMMlfWgPSlJGWWJPl"
+            .string "BdcqqhcdBRpFhhZBthhctdJSJJWfgGFlJCSFgbWPCDJS"
+            .string "NdRTZdNqBwqtthpRBTTRqdtZrsLQVzrrzjzDwDsnmrQrnsrr"
+            .string "HZFZCFzZWszqsRTBZTNMhmthVTmhDppmMQVPpm"
+            .string "wjvSbJddvrvlrvnJSJJvlJmhPlhVPVtGVpQDBVMpphQP"
+            .string "frbrfrcvvnvjfwbcJgrrCBRsCFsNzRgRCHCqssRH"
+            .string "dDFNqNqZqPLNqvqTTvCLSPdZssGHClJQJcRHJGHHcHBcsMsQ"
+            .string "lrjmWgWWrhjgrppQHHMQrsQRJGcBJc"
+            .string "lVlmnwjmdTTSvVFN"
+            .string "FWNFHvQPmLGwwwSHtswwln"
+            .string "RfMJcDdfdcfdddfZjdchrtZmSmCZVtqVnZmrnrtC"
+            .string "JMmJcfjjphcghpgjhRGzGzBBGPFGNBvPTpFL"
+            .string "cVPVwStmmcQPBQPpSCppwhHZNNqHszNBhsNRNjqHzj"
+            .string "MfWdDgvdbnvgMTWgvgZfzmsZJHzNhqjqjRhJ"
+            .string "MDWMWGndMgFDnFLDwQrPPCSrCSVrlmGS"
+            .string "QLZmPdRdWmMsMDWZmsLWWrhMHcHGzHvGzFcvrvzNrc"
+            .string "tplSbLVBlvHHcFNnSr"
+            .string "VqfgwLlCJWmWQTfW"
+            .string "nRWvlvRbtLvdMCPFGL"
+            .string "wrfsJNNGhNzGrTgDMDLgPMLPfq"
+            .string "wcVhJQhwhrrBpmVblBRGSG"
+            .string "HHHcggrZLcQQcQll"
+            .string "GzfzTRTzmmFMwSNSwdSJQtNLNB"
+            .string "TGbmLMFTzVVVTMzmFMfFPMHPZhnjZCpHnhgnZnPWCPZZ"
+            .string "MRwwpVMHRspqVqwmccDlDrcHBBZgBl"
+            .string "jQfQQQjWWFBgmcgDfcZg"
+            .string "hvvSQzSnQQSWWQWSjTZVTRMshwVCssppwV"
+            .string "pvrTvCvtFppCHMMZcdDFdcZM"
+            .string "wLjTQnqljjSnlwjqjRgLcHHHMBDMZhBMHgHcbBDh"
+            .string "mqjqlSNqRqwSRrWCvzGmtfTfzs"
+            .string "TWScDCqCQQVBWDqWHsHswwBgRJzRhhHp"
+            .string "dPttGrvFfGjMjnjvshsJgsJLgghRgH"
+            .string "rFMlGdtjPffNnnrffSNcVCDqQqCQRqQRRN"
+            .string "GmBRbVpPbmJcwggBBgWW"
+            .string "LjsTCNNtddjHqLLgWwccqgfq"
+            .string "nsjNjntNtjHCsDwZmwZZVmmGSvSD"
+            .string "bwDDgNFtMMDbFsMbFwWWVcRcSpcgjgQWhWSp"
+            .string "lfTJJlvdfCffccWppRjRlcSc"
+            .string "RnzGdJJmsMNnMFtM"
+            .string "bsBTFsqqTTmFZTsQBWWznWCRshlJNJlCVh"
+            .string "GjGnDvDjvjPppHwwpwgrPPClJhNVRCzhhzJWlWlhNlvJ"
+            .string "ffdgLrgdLrDjdfHPbbZbttcBbcbLmntn"
+            .string "TNTwwvTTHNtTHNLLVqtqTSZBJnrnhhbrFJjZjnVZgghF"
+            .string "cplWfRlzcWfRCZZhFrGjBfjZjn"
+            .string "pddzDsRpDcclzCQMWBvNSmTTSqdvPPvqwqtT"
+            .string "DQTttwwLtQtVSDMJDRmmSS"
+            .string "ffsWfvrBWrPvwJhPhPSMPMVn"
+            .string "WsvsggFvwNLgHtNQ"
+            .string "llBbVDMTlFVdFDTbVggSVsqZqZZZqqvNJZJRNRWgtv"
+            .string "HhpjcHHvjPsqCsWcNcsq"
+            .string "GfpvnPvwFDTTFFDw"
+            .string "GMmFGMGFFgVwQHQwwM"
+            .string "cJtZNtZTbThcZtcZJJtTZWJPllgNgpPvVgpjHvQpRpHQNg"
+            .string "hWcJZcnhcJznbcBZLqSLDfCmHqnqCLsD"
+            .string "zQpjLpnhnsHTnlQLrMCCHPFrvvCMPcHm"
+            .string "ZfgdSBtNqBwlgSDfZDwtqSFvJCvrPrVvFmwCJFvrmmFV"
+            .string "dfbRNZBqDtgRNBNNNljLLjhGRGGWGLGTRhjz"
+            .string "hhrnfBzhtzZgDgDnBfrfDZsRpMNCNNWjwCCfGQGGNGCGQC"
+            .string "lcdPmHLSPDSdFDpQMLjCQQQCRGpN"
+            .string "lJSSbmPdVdVvdHbvSDFHHPlZqgBnttzgTsssTrqgbZbsTT"
+            .string "FsdsShrgggLDdbSDsgrGrlWHTpfRpTjjfFTzRTRjBWWp"
+            .string "mPvqCmJCqJNnPvPNPCvvLTTVjHjzNWHHTWRBRVTWVz"
+            .string "wJLvqPZmJtccncvZmJqqrghDGQwbdSGdsgGgQgQr"
+            .string "zFwtNJGtNFlpnwHccZjZbcpprsmc"
+            .string "PWQfBWhBgQgTWQRLThBqMSVDSbbDRsVDmsmZsSZDjr"
+            .string "fvQfWBfLqfTqhLhCvNFttJlCwGrrCC"
+            .string "fNrGLNrfNrGjllRRRPmWVL"
+            .string "tbJdcFbSSssZSmmpFcsSbwDWVWBlllVPDnnjBFjDRnBF"
+            .string "ZZJcvZctgNmmvMGhQm"
+            .string "HhhjFRhgrcRTFLvWVJVQWJVHDHQJPP"
+            .string "GwCmwBfGzfSCzCfwtmtzzJVWSVJJZrbWQQQqJJDZVJ"
+            .string "mtfzpGdststtBmfmCwrGRFcTcvjngjFnRcLnpLLn"
+            .string "rrwjdwLgVmVwHrfPCJPQBCBGmPtt"
+            .string "ccNZqbNnMMblNpTlNpnhhBPSJsQhJtJtChPJqS"
+            .string "vTWvNcWNWTFvnnvcgjzDLVQLgHVwWDrW"
+            .string "jNPgbNHbfLJgLzfz"
+            .string "ShvhhFVVDShFVqMSSSvZfffvPLtBBBBJJlpfLJJv"
+            .string "DqhnShhMnZZwCSDCMhChrRnNrNdNQbHNNPmjmdHN"
+            .string "VQVZGQFnzFTSsBfgzgfs"
+            .string "rjlpjtDrtMLZPMtPtpPZPwCsgSHgMHCCmCTWsgBWSBmg"
+            .string "pjvDqLwrlDtwqtqNLvtjpPPwRNbQRncQVQddZhRhJQbJncbG"
+            .string "PsBSqnSdQsFhmmmnppFc"
+            .string "TRhNvrTCvNTHVcfHbJVTpc"
+            .string "rhtWvGWLrjRqdSqqLLqdld"
+            .string "vPhfqPJvrMrnffDDhvpMjdzGMLdLLQpllLGQ"
+            .string "mbmcFSScGbSCcQlzwQQlclsg"
+            .string "BSGVCmCTZWCGGvnvfZHqqrDhHN"
+            .string "GSRfrzGRhzsGChjTBBlqBgjgCTCn"
+            .string "wHQwtDVDHwHHDJcDWJZwzHZBqTnnBFlvjFgBqnljjvBdBZ"
+            .string "JNmVJpVmNtDHJWHrbfPLhbGhrzRbpr"
+            .string "WcWcbzNPbDwBNvWBwRMPQmJZQRQZftRZGP"
+            .string "LhVHFgggTHCFHhfMQQSMMGQRMLLM"
+            .string "qnrqppFVHphqfDsNbzjrzbrN"
+            .string "cwgDrdLSrBrvvhDzCljjTW"
+            .string "VHtVZpspQtMQsVRQppFVQVHtCdPTPTzdjvhTzTTPRvjjvWhn"
+            .string "QQZpMdJsQFJHtMHdScwLwLJGrSScSwqw"
+            .string "ZsjNflGfRfRPrZNRFcffLwJdwcLdDBnwzzzDznVn"
+            .string "CTGvhhTqbtbgTqLJWdDntzWWdnLw"
+            .string "phCMgmQGvvHCvMhbTQQFsNsNFPZSfZjffmNsll"
+            .string "CNpCJHLNhhSSHZPgrFlFFWgpFpmzjj"
+            .string "qQttDVDwQGdQGvqDQfwbcVrrlljjzzmzrVJgrr"
+            .string "nvMDsqqqQvfvsqDnRSZHJPPZHhLHLS"
+            .string "RNNrrPfDNRQwQhjscghMqs"
+            .string "WVZlHvnZqtlLVLvwjwhsggTstMhwTw"
+            .string "vGHWLJlVWlmLVqRCGCFFNfqqGf"
+            .string "MNzqCnvqvqvCVLBvvCVCpVcRssncrPSTWGrPSPdGTcrP"
+            .string "hmHwFmQjFlhtZmHwtZjjddSSGcsdPrrGcQQQRGPW"
+            .string "fHbbFjlhZwmtwhfjmmwmmLbpLqzqvBzLzCvLNRMbNB"
+            .string "tQfLrtQPrrfDSSCVlDfLSrmbBjGvWjjLmWWWpWNNppmv"
+            .string "wdHhRTTndnRThdvnBFGpNBMnpvvp"
+            .string "JdqTHTHHRdqzsJRRzTRHscJdDSGCfDlqQZqlfZrZZCffqSSQ"
+            .string "hQMWLsgGJMMhsCHggQWhgspDWFPzZvPvptDvzvmtdtdF"
+            .string "BrBlrTBrNRbfnjNQlZDztPvpmpppmzvfdd"
+            .string "jQlQlqQVbVcsMgMgChhJVs"
+            .string "MtFMCTWRFRRtCRTTRTMGJddjLdstHvBzBHzHVVpL"
+            .string "lZSDnbDlnZPrbHpzJJsdSVJpBL"
+            .string "nNghhPrlZlgDTFhCfMFJRMQF"
+            .string "RGpPFZPRQZPFRGvpPQPpjvpmhnnCMjhmhgBgVgMVWBVgVM"
+            .string "wLtfNdNHmrNthCBgCbhnngWd"
+            .string "srSfwHfszsNmtswlrqQDGQFDRPJGDvzRppRJ"
+            .string "GVFFGvVWZLFsmssFRNfVvmGGJPpJTTqDBvTpqlpDvqbBtTPl"
+            .string "gQhzzChzrMQhjpzlzWzJpPpBJb"
+            .string "ghgWjcCjMgCHWdQMhdjChCmfwmRRGZZGVHLZHRfmNwVs"
+            .string "DnDVhdnrfSfpcGGjQQGdJddJ"
+            .string "bPWPRbRsRMsHNzDqTZcGBcqZqmmN"
+            .string "HvwPvvzMPwDCChDVwS"
+            .string "vTCCvTfWFDTtRPMvfWFlDFHBqGLpLzbwBgWwqzGqbBbB"
+            .string "cQcSNchSJSZShVJNnZrhSqBpgwGHHtGwqtbwLbqpbr"
+            .string "JNnJVsJscNstNhQsjnVVNlFfMmTMFfCTfjFvfPRPPF"
+            .string "VLFBsgffNFNqRvbz"
+            .string "ChltjTdjDhHpHZvdpjjZhwCpbNrbSzzbrNGMTMMNSMbWWNSN"
+            .string "vQjpttQhHnLsBQVLsQ"
+            .string "mbzQgTzRVVbsVdQgzzVRddmztFGWNGNNWnGtFSGBsrCNWCrC"
+            .string "jfJjvPPwLDcHDPvDDPDppLCWCFBGWntCBnrtFcrFWTGn"
+            .string "wpJPLjvpTTDpwhfgzmVMbqhdhVRgzl"
+            .string "PlcqbWClLmnqZVLq"
+            .string "THwdrrhddhhfJJhwLJhpQnDVnznnmZQQnSpfpD"
+            .string "vrFdvGsGHhhhwHjFGrFGJHdMCCcNgbWMPccRRccMFLNPPP"
+            .string "tbppJqcNtJnZzRJbPFsFPHfZrrshFDjj"
+            .string "GdwgwlLgGCndsDFrhDHHFF"
+            .string "SSlLnmmvqWNqmcqb"
+            .string "ZPFPPTZpZSWzCMMSzPBsFvhtlQvJQQtJhsVs"
+            .string "dmNbmgbrwDNmbcDgwNdcwdLsnhlJlnvtsBJnhVQqqnstLB"
+            .string "bNGfDGgHHVwbwNwVfgmRMzCzzCSHjSRZSZCTRS"
+            .string "dDTffQdqQQLBLnVLLQvL"
+            .string "rrBHZZcgJcrLvNLtLgRLbN"
+            .string "cjjJhrFlhZwFFzwJzmTBBdmTsDPzDsBP"
+            .string "ClGrJJMNCrGQqlcPvWgnDP"
+            .string "ZBvbjHpSwBVVVcWjjjqQ"
+            .string "BLSbbwsHSTBHwmLHHLbBsSTFdrfvCrtmdzfGJzrdzGJddGfh"
+            .string "gljWRwmSjtJWjJtJjgjSZfVSTVVHGZSVHcVchZ"
+            .string "pBzLFQpPsFBGcGBTThfB"
+            .string "pFpQzFLPLpvQFQnLbsqqGddgjbmwRldwtWmlGWwj"
+            .string "PDQDMFQBMfWPvjdLLndLjrmsMj"
+            .string "qZqVzTRRqHtvZGGtVqTTzVjLLsrmJCddnLjrjHsrhdCr"
+            .string "GzwcZtqNzqvNqwzZVGRwSzbpWfFbWPlWFpNDBfQfFNNf"
+            .string "dfRszdzVdsjwdhLwCCqwGllHvPGPwG"
+            .string "SpJtBLFgcGqHQClqZF"
+            .string "JrttrtcTmSSLrmtBTrNgnBJjbNhhbhzRdsVdMhNjhMMhVd"
+            .string "MPFSCfSMqVSBGrtzlvccfQctzbzl"
+            .string "hZNjTHWWTZwshbLvmlWpBzmbmm"
+            .string "dRTTJNDNhjsJqBBMMgrJPVVr"
+            .string "WnVzDMjlDVWwwHgwhmgNhNNsJh"
+            .string "qfvrLNCcbLdvpcvbrPPqCsGhSJGTTBspTshBpTBBms"
+            .string "ZLvvZfrPfPCLbCFFzjVQzRnNNMVzDQ"
+            .string "nllbFTTpTFTBcnCjQPqQdZRQZhCb"
+            .string "tvWszrrztvSmzQQvrDmZRjjjPPDVqPRdZRdCPd"
+            .string "gfzvSsftgQHQHgQl"
+            .string "GVbHRRGRLpdmGWTm"
+            .string "gSPPltPlrlvccFccPlcJNCTpnnmpMCLMMmWfdRmMSS"
+            .string "FzNJRhhvPFRvQwzqjqzBHZZj"
+            .string "PhZSpFBPBFsNmjBVllltBj"
+            .string "JMGLnrrnbfffrdqRqPHnnqLDVTDDjgmRgwtmjDljlDVlwl"
+            .string "LHMqPqPnnqGLWJPMnndrGfSWppzvvFSChFFFvvzQSQZz"
+            .string "RSWWssbvnnCqZnWsRCnssWrTggNhgbNHBgQjhhQBgjNT"
+            .string "mcpzcppzczcDGVcPcDLLGLjmrMNTNtQNHhMHrQBQNTgN"
+            .string "LVpPfcjjWvsFFnFf"
+            .string "MpddpdCpJdJlbdMvBHMnnsHqSRvG"
+            .string "PWvZfFmZrrfmwWwFznBnqRRSGcsBVmVBRG"
+            .string "zjzzhQPQvzjLPQzwffrwrtlTCDtJDlgJLltpTTJlTl"
+            .string "TvTWjjzpznGttFFZccrrPrSZllcB"
+            .string "gNNSqHMqsMHQJHNZCDDCZDqLZdlZBD"
+            .string "SMQNSRNbRRHwhwhsRmtnvWVmmnbGnjmpGn"
+            .string "ccSVQjCQddTsFJcH"
+            .string "gLppBfgfmvCRFdsddTJJgb"
+            .string "WMLMmWGGBZWZLCtvDhlSSDGlwhSPSzSP"
+            .string "TpqVGVHFQGmqSqPZdccNCzzhdwCjNG"
+            .string "fffbbvftMrBMDDcCccCZCjlvhCCd"
+            .string "RLWMnbftDhnMRtfBftRJMtLMgFgHmmpmPmSmmQFPPLHHVTQS"
+            .string "nRvwQSDNcpVJJcJR"
+            .string "qZMjBhjhZMMBzLBGLGrjJbTPVTpbdPPdVbVb"
+            .string "ZZpmFFZlfGqfmmGMzlfmMmnWQDtHtSvnWWNSHSSstFtS"
+            .string "bFDGZjGDbbRSgLtN"
+            .string "CphJVfJWCTBgvfLHNRcwnt"
+            .string "WVhPWBTzzChzhhhBmrpPPCJZDQtdMlrjFQdrFqsjdrQsFG"
+            .string "ZBpVQHHVMMWWdmmLWw"
+            .string "lQhhrjcRttrqbvQLNwdDWzmNSDmStz"
+            .string "QbGqhcbvcsqvCCHnsCZHCnTn"
+            .string "tlWtQTTTJjTQtVnmrbnPWVShVC"
+            .string "MDMGGzsHcwFgGZBqrmmPSnbqVmNVGC"
+            .string "sZFPwHcMZDBRTlvQQJttTQTR"
+            .string "FhVRfGptMGMnZhRFBNRBCCNHHNvTNTRC"
+            .string "zmwrLLSjrbzmNlcvvrHvDPCN"
+            .string "JLwjQdSbjdbSdqJQFGVqFVMgnGHMfGVV"
+            .string "fffZWrJqZSHWTWHqSvrgDhggzRjttsDhpDgs"
+            .string "PGlBLcBBbnnbLLFbGLBjRgjFTFVzshtzpgsppz"
+            .string "TGCPnMPQlGnPmclPlnnQmbmHJvNvfHdqwddwvvZfCNHCfW"
+            .string "ClLwpspTPrTFZCdzFbZdbQ"
+            .string "RRMWfRgWVRMRQBZZScVczVGFbjNb"
+            .string "MfnvMqWmslvDhQPw"
+            .string "hdndSdqsTddBhdcmmNHFDcqHttPF"
+            .string "JjMzzMZQGwZGZJzMzZJQzGJFvPvNPtFmvmNmDvcFtvDHMv"
+            .string "gZwzQwJfGVJQJbGLBsSTSTdTbCWDBSnd"
+            .string "ZZCHZRzMZGRMhMMVVFNThrdd"
+            .string "SgsccSPmmgqssSlqsgcmscSqlhpFdVThjphNrdrhjdwdhFJN"
+            .string "vmttqTcqvLqqmPccmqSBbRWnWzQZZZZBHnQCzHDH"
+            .string "GgPnGdSPBpGsLTBL"
+            .string "rVNJjmwZqtZZshltFTtvRFsL"
+            .string "mqmWrZVqWjrqZMNwPMQQbsddgdsbsgPz"
+            .string "LZLVvjZrggHLJggSZDgrnPnQnRnppVRllntRdPFz"
+            .string "chMCzbqGmhNhhbBCMBdFnpfqFnltRRQnlPpQ"
+            .string "TChmWcMMTmBswJzZZrWrvzgg"
+            .string "gngRNBNRBsNFFBgfgbLLLnqdSLvLTcbLbd"
+            .string "GWtlChlVMllcZSDWSLbdZL"
+            .string "lljjGlhMGrGJpsFdRJfsfzfz"
+            .string "jVTdrnGQcQtTTTFQqBqsgHHFgsqf"
+            .string "ZZLbPLzDzPZCmsgqsBHt"
+            .string "wDzDlPblRDPLPvhvwtdnnhdrnrMGWMVGMThj"
+            .string "spjjpjvjpjmQjrpCMfSlfzrPBl"
+            .string "dHFntHWnnbRVFtnbcqHFzBCCCPzfPMlcCSlgllzc"
+            .string "RLbVWHnnSWtnHFbdbVRdNNtQsjsQTjDLwmGTmTssQwmLGJ"
+            .string "JbJJSLMhRMSLhNqqwFDwFNcFqL"
+            .string "GcpnGnznnpzpzGpffNTNTwTfwdDNNdTFdD"
+            .string "nllnlPGWQWHcGpzzQGGzGvHGJbVVtJSChQVbmtmVJrmrmbRm"
+            .string "GFsFrzwrflmtdtbltG"
+            .string "ggLPDngCJncNLJRDwgnllmJqjWMjhjhjWWmWjj"
+            .string "nBNRNPgpRgDLTgNwfsSHVBQHVHwsZr"
+            .string "WwvnvWvcFtwtSFSF"
+            .string "zBZZZRQSzMBSgSVJGjGTPTGFzCzmmj"
+            .string "fZDrpZZfRfMgSQDDBhgQghDHsnbrcNlWnnLWHLrHsWnllc"
+            .string "ZVncdPPwVPdhZngnqHWHNNvTHvlMvn"
+            .string "fSLjjLSGGBjTTHqvBqrMNT"
+            .string "RSSSDGRtSGZthTTctmtg"
+            .string "rtzrfJbgJHRfGRZLPR"
+            .string "hdVhlllmFlFPLwHmsRGGZP"
+            .string "nTWhRjTBTWlvNQgnJSSbrJtz"
+            .string "JgVTpBpfvgpTDDJFJvTgggtlFlNNMRLNNzNNZRNHMRCLlF"
+            .string "wbPWcSGbGqWDlnNWMMMCLMWZ"
+            .string "wrsGcbrcbcqwDwbcmGvQBQgTTsdVJgJsVdQf"
+            .string "mztrhgJtDrhgcrZmnhbnzbhcMTMPlBCPBGVGTMVGslCCPGDs"
+            .string "FLRQmjjFSQpQwLlPsMsCpvslvPCB"
+            .string "fNLLwSdSwWSWjwmrtczZhhrJzdzh"
+            .string "HHwCwJFmHZttZCfCSffSMHcVDMcPBRPcPRDhPghM"
+            .string "nvQLsTnLslnLvpzGTssnsRPDMhPgVPVgtcVMRPgVQQ"
+            .string "vnsTGWlTLsWTLLvNsGWlsZrwmZCJddjFmtJJNZFftj"
+            .string "hbjSTvSJTfcSwcPSPfTbfHszVVFpGnpJpsHFnHVVls"
+            .string "rtZrcQrRZZQrmZBQlCGppnppHzpVFCGR"
+            .string "WmLqmgNtcLNQWTbPvfPwbbdb"
+            .string "HzZgsdHglHlzdHsFtsNNJSlNcSpjcjlrrNVv"
+            .string "wqqWRPPqwmbcqPjQVvSPJJrVpv"
+            .string "qqBBqmWRhqRLqcBnhzzztgnTdDHnHsFsHn"
+            .string "rJPFVwwsrJwmdVrLWJvvRBWBvbzWlb"
+            .string "nDZcNGNpjTpHncvpZCDnTNZGhlWzQhWbpRRQlQhpWWSWLlQb"
+            .string "CDNntnCCHnvmqPfwtFdVqd"
+            .string "gqBwgBjCswwgqNBNCVDDTVdhlSDTDcZc"
+            .string "HvRRFMzRRRRMpHrtTllfhZHHSShHTf"
+            .string "PmlGLPrppMrrmFFmLMWRjbsjnsjwQNJWnbQjWgBN"
+            .string "pDggpFgRghZjBFPPnPPFrt"
+            .string "cwTfLwBVwCWbLcVTVVvrdndGjMHrnGJtnttdMC"
+            .string "NTVcWNvcBSpgNqspRQlN"
+            .string "DLDgFlDmNZfjfnJZSF"
+            .string "tctvttzvGGzvrHqtVVdwnJGSSnnjjZdWTdwW"
+            .string "zvpcrbpHpqJJsPbPlLlhmhglPQ"
+            .string "pvHHvssFCFZQNCftttdQdd"
+            .string "VgTGTTVGgLjDjlLGzgPVMTNwmcwQmMQfQtmdcmwMJwNm"
+            .string "TPjTDjfGWTLLljgzrWpZZbsqrFqhqbps"
+            .string "ppVLcfcwSLgpSLVLgWwtfshDNDqvWvGvlQZvDNHQHjqq"
+            .string "MPrzmdRrPPrCJFnMnMRRFRPdqqZQNQvjvZDGDlHhQvGNDG"
+            .string "BmBMBBJTMmPBJMMFCCFJRmrsTlVpVbpwLSVwLsgcwTVlVc"
+            .string "SSGzmFRzmRGLgSSmGMJFnvfvJnJVnJQnMl"
+            .string "cBpjHtjwNfcpNZtppHtCMlMPMlJBVlVQlvJPvJ"
+            .string "dNtNZwqWfqtqZWtHttsqHqrRrrdRTLbmmzSLmTGGmbrg"
+            .string "RrrddnrgnRbbgWdGrfnwgQwjDjDpvTpBQTwBPP"
+            .string "MHCStZJzSwvPjWQD"
+            .string "mcJWVHCCLcGLbdcn"
+            .string "PlMsdjPdGMjdPSrSjgddbLbmHHTszHZzpHmsTFvmpzZzmN"
+            .string "ntRJQVRfcQhcQWhnchBJWntTFTTTNTSpFtztmZFDTpDZ"
+            .string "hQfcfCBSwCccVJhSJnrPPGLqPlbPLCrqldgb"
+            .string "vgvWDMZvGpcqgqsP"
+            .string "tSdtjLHLQLHjdFdDddQSQhwlsGqwQlqqqhQsPhGc"
+            .string "tbRjtTLFRvTZDBrMrV"
             .string ""
         end_of_data:
         copy data, R1
@@ -334,17 +421,26 @@ function get_first_string() ~> String {
 
 function find_duplicate(string: String) ~> Char {
     std::assert_equals(string.length mod 2, 0);
+
+    let first: mutable = set_create();
     for let i: mutable = 0; i < string.length / 2; i = i + 1 {
-        for let j: mutable = string.length / 2; j < string.length; j = j + 1 {
-            let lhs = char_at(string, i);
-            let rhs = char_at(string, j);
-            if lhs == rhs {
-                return lhs;
-            }
-        }
+        let char = char_at(string, i);
+        set_insert(first@, char);
     }
-    std::assert(false);
-    return '?';
+
+    let second: mutable = set_create();
+    for let i: mutable = string.length / 2; i < string.length; i = i + 1 {
+        let char = char_at(string, i);
+        set_insert(second@, char);
+    }
+
+    let first_pointer: ->const Set = first@;
+    let second_pointer: ->const Set = second@;
+    let intersection = set_intersection(first_pointer, second_pointer);
+
+    std::assert_equals(set_length(intersection@), 1);
+
+    return set_front(intersection@);
 }
 
 function to_u32(char: Char) ~> U32 {
@@ -352,6 +448,15 @@ function to_u32(char: Char) ~> U32 {
     bsm {
         copy_byte *R0, R1
         offset_copy R1, 4, *R0
+    }
+    return result;
+}
+
+function to_char(n: U32) ~> Char {
+    let result = '0';
+    bsm {
+        copy *R0, R1
+        offset_copy_byte R1, 4, *R0
     }
     return result;
 }
