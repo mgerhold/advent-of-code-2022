@@ -49,64 +49,65 @@ function print_part(part: U32) {
     std::put_char(' ');
 }
 
+function part1() {
+    print_part(1);
+    let sum: mutable = 0;
+    let string: mutable = input::get_first_string();
+    loop {
+        if string.length == 0 {
+            break;
+        }
+        let duplicate = find_duplicate(string);
+        let priority = calculate_priority(duplicate);
+        sum = sum + priority;
+
+        advance_string(string@);
+    }
+    std::print(sum);
+}
+
+function part2() {
+    print_part(2);
+    let string: mutable = input::get_first_string();
+    let sum: mutable = 0;
+    loop {
+        if string.length == 0 {
+            break;
+        }
+        let first: mutable = set::create();
+        for let i: mutable = 0; i < string.length; i = i + 1 {
+            set::insert(first@, string::at(string, i));
+        }
+        advance_string(string@);
+        std::assert(string.length != 0);
+
+        let second: mutable = set::create();
+        for let i: mutable = 0; i < string.length; i = i + 1 {
+            set::insert(second@, string::at(string, i));
+        }
+        advance_string(string@);
+        std::assert(string.length != 0);
+
+        let third: mutable = set::create();
+        for let i: mutable = 0; i < string.length; i = i + 1 {
+            set::insert(third@, string::at(string, i));
+        }
+        advance_string(string@);
+
+        let first_and_second = set::intersection(set::as_const(first@), set::as_const(second@));
+        let result = set::intersection(first_and_second@, set::as_const(third@));
+        std::assert_equals(set::length(result@), 1);
+
+        let badge = set::front(result@);
+        let priority = calculate_priority(badge);
+        sum = sum + priority;
+    }
+    std::print(sum);
+}
+
 function main() {
-    // part 1
-    {
-        print_part(1);
-        let sum: mutable = 0;
-        let string: mutable = input::get_first_string();
-        loop {
-            if string.length == 0 {
-                break;
-            }
-            let duplicate = find_duplicate(string);
-            let priority = calculate_priority(duplicate);
-            sum = sum + priority;
-
-            advance_string(string@);
-        }
-        std::print(sum);
-    }
-
-    // part 2
-    {
-        std::put_char(' ');
-        std::put_char(' ');
-        print_part(2);
-        let string: mutable = input::get_first_string();
-        let sum: mutable = 0;
-        loop {
-            if string.length == 0 {
-                break;
-            }
-            let first: mutable = set::create();
-            for let i: mutable = 0; i < string.length; i = i + 1 {
-                set::insert(first@, string::at(string, i));
-            }
-            advance_string(string@);
-            std::assert(string.length != 0);
-
-            let second: mutable = set::create();
-            for let i: mutable = 0; i < string.length; i = i + 1 {
-                set::insert(second@, string::at(string, i));
-            }
-            advance_string(string@);
-            std::assert(string.length != 0);
-
-            let third: mutable = set::create();
-            for let i: mutable = 0; i < string.length; i = i + 1 {
-                set::insert(third@, string::at(string, i));
-            }
-            advance_string(string@);
-
-            let first_and_second = set::intersection(set::as_const(first@), set::as_const(second@));
-            let result = set::intersection(first_and_second@, set::as_const(third@));
-            std::assert_equals(set::length(result@), 1);
-
-            let badge = set::front(result@);
-            let priority = calculate_priority(badge);
-            sum = sum + priority;
-        }
-        std::print(sum);
-    }
+    part1();
+    std::put_char(' ');
+    std::put_char(' ');
+    part2();
 }
