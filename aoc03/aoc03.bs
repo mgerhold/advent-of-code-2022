@@ -32,20 +32,81 @@ function calculate_priority(char: Char) ~> U32 {
     return to_u32(char) - to_u32('A') + 27;
 }
 
-function main() {
-    let sum: mutable = 0;
-    let string: mutable = input::get_first_string();
-    loop {
-        if string.length == 0 {
-            break;
-        }
-        let duplicate = find_duplicate(string);
-        let priority = calculate_priority(duplicate);
-        sum = sum + priority;
+function advance_string(string: ->mutable string::String) {
+    let next_string = string!.bsm_char + string!.length;
+    string!.length = next_string!;
+    string!.bsm_char = next_string + 1;
+}
 
-        let next_string = string.bsm_char + string.length;
-        string.length = next_string!;
-        string.bsm_char = next_string + 1;
+function print_part(part: U32) {
+    std::put_char('p');
+    std::put_char('a');
+    std::put_char('r');
+    std::put_char('t');
+    std::put_char(' ');
+    std::print(part);
+    std::put_char(':');
+    std::put_char(' ');
+}
+
+function main() {
+    // part 1
+    {
+        print_part(1);
+        let sum: mutable = 0;
+        let string: mutable = input::get_first_string();
+        loop {
+            if string.length == 0 {
+                break;
+            }
+            let duplicate = find_duplicate(string);
+            let priority = calculate_priority(duplicate);
+            sum = sum + priority;
+
+            advance_string(string@);
+        }
+        std::print(sum);
     }
-    std::print(sum);
+
+    // part 2
+    {
+        std::put_char(' ');
+        std::put_char(' ');
+        print_part(2);
+        let string: mutable = input::get_first_string();
+        let sum: mutable = 0;
+        loop {
+            if string.length == 0 {
+                break;
+            }
+            let first: mutable = set::create();
+            for let i: mutable = 0; i < string.length; i = i + 1 {
+                set::insert(first@, string::at(string, i));
+            }
+            advance_string(string@);
+            std::assert(string.length != 0);
+
+            let second: mutable = set::create();
+            for let i: mutable = 0; i < string.length; i = i + 1 {
+                set::insert(second@, string::at(string, i));
+            }
+            advance_string(string@);
+            std::assert(string.length != 0);
+
+            let third: mutable = set::create();
+            for let i: mutable = 0; i < string.length; i = i + 1 {
+                set::insert(third@, string::at(string, i));
+            }
+            advance_string(string@);
+
+            let first_and_second = set::intersection(set::as_const(first@), set::as_const(second@));
+            let result = set::intersection(first_and_second@, set::as_const(third@));
+            std::assert_equals(set::length(result@), 1);
+
+            let badge = set::front(result@);
+            let priority = calculate_priority(badge);
+            sum = sum + priority;
+        }
+        std::print(sum);
+    }
 }
