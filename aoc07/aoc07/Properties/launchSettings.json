@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "aoc07": {
+      "commandName": "Project",
+      "workingDirectory": "C:\\dev\\cpp\\advent-of-code-2022\\aoc07\\aoc07"
+    }
+  }
+}
