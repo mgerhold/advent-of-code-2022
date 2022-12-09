@@ -79,7 +79,6 @@ fn main() {
     let mut count = 0;
     for (row, _) in map.iter().enumerate() {
         for (column, _) in map[row].iter().enumerate() {
-            //print!("{}", height);
             print!(
                 "{}",
                 if is_visible(&map, row, column) {
