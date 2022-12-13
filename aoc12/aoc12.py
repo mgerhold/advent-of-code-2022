@@ -162,7 +162,7 @@ def find_best_path(
     # estimated_costs: defaultdict[tuple[int, int], Costs] = defaultdict(Costs)
     # estimated_costs[start] = Costs(heuristic(start, end))
 
-    while not to_visit.empty() > 0:
+    while not to_visit.empty():
         current = to_visit.get()
         if current.coords == end:
             # path found
